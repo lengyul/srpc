@@ -24,15 +24,11 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<Object> {
     protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
         logger.info("接收到客户端请求数据：" + msg);
     //    RpcServerThreadExecutor.processRequest(ctx, msg);
-
         ResponseMsg responseMsg = null;
         RequestMsg requestMsg = JSON.parseObject(msg.toString(), RequestMsg.class);
-        int type = requestMsg.getType();
-        if (1 == type) {
-            Object result = RequestLocalCall.handler(requestMsg);
-            responseMsg = BuilderMsg.buildResponseMsg(requestMsg.getRequestId(), result);
-            ctx.channel().writeAndFlush(responseMsg);
-        }
+        Object result = RequestLocalCall.handler(requestMsg);
+        responseMsg = BuilderMsg.buildResponseMsg(requestMsg.getType(),requestMsg.getRequestId(), result);
+        ctx.channel().writeAndFlush(responseMsg);
     }
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {

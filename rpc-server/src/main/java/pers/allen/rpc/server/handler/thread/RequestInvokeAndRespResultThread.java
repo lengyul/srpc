@@ -27,7 +27,7 @@ public class RequestInvokeAndRespResultThread implements Runnable{
         int type = msg.getType();
         if (1 == type) {
             Object result = RequestLocalCall.handler(msg);
-            ResponseMsg responseMsg = BuilderMsg.buildResponseMsg(msg.getRequestId(), result);
+            ResponseMsg responseMsg = BuilderMsg.buildResponseMsg(msg.getType(),msg.getRequestId(), result);
             channel.writeAndFlush(responseMsg);
         }
     }

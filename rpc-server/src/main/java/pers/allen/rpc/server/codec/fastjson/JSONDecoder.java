@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import io.netty.util.ReferenceCountUtil;
 
 public class JSONDecoder extends LengthFieldBasedFrameDecoder {
 
@@ -20,6 +21,7 @@ public class JSONDecoder extends LengthFieldBasedFrameDecoder {
         frame.readInt();
         byte[] msgBytes = new byte[frame.readableBytes()];
         frame.readBytes(msgBytes);
+        ReferenceCountUtil.release(frame); //  释放对象
         return JSON.parse(msgBytes);
     }
 }

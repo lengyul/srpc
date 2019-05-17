@@ -8,9 +8,13 @@ import org.springframework.web.bind.annotation.RestController;
 import pers.allen.rpc.client.annotation.Reference;
 import pers.allen.rpc.server.service.TestService;
 import pers.allen.rpc.server.service.UserService;
+import pers.allen.rpc.server.utils.async.RequestArrayQueueUtils;
+import pers.allen.rpc.server.utils.async.RequestAsyncFutureUtils;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 @RestController
 public class TestController {
@@ -19,10 +23,10 @@ public class TestController {
 
   //  TestService testService = RpcProxyFactoryInvoke.proxyInstance(TestService.class);
 
-    @Reference
+    @Reference(type = 0)
     TestService testService;
 
-    @Reference
+    @Reference(type = 1)
     TestService testService2;
 
     @Reference
@@ -45,6 +49,7 @@ public class TestController {
     @PostMapping("/list")
     public List<String> getList(@RequestParam("n") String n) throws InterruptedException {
         int threadNumber = Integer.parseInt(n);
+        System.out.println(threadNumber);
         CountDownLatch countDownLatch  = new CountDownLatch(threadNumber);
         for (int i = 0; i < threadNumber; i++) {
             new Thread(() -> {
@@ -57,9 +62,39 @@ public class TestController {
         return testService.getList();
     }
 
-    /*@GetMapping("/ref")
-    public String ref() {
-        return JSONObject.toJSONString(Arrays.asList(testService,testService2));
-    }*/
+    @GetMapping("/async")
+    public Object ref() throws ExecutionException, InterruptedException {
+
+     List<String> list =   testService.getList();
+     System.out.println(list);
+     // 获取当前请求线程Future
+     Future<List<String>> future = RequestAsyncFutureUtils.getContextFuture();
+     List<String> list2 =   future.get();
+     System.out.println(list2);
+     return null;
+    }
+
+    @PostMapping("/asyncList")
+    public Object asyncList(@RequestParam("n") String n) throws InterruptedException {
+        int threadNumber = Integer.parseInt(n);
+        System.out.println(threadNumber);
+        CountDownLatch countDownLatch  = new CountDownLatch(threadNumber);
+        for (int i = 0; i < threadNumber; i++) {
+            new Thread(() -> {
+                testService.getList();
+                Future<List<String>> future = RequestAsyncFutureUtils.getContextFuture();
+                try {
+                    List<String> list2 =   future.get();
+                    System.out.println(list2);
+                    countDownLatch.countDown();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }).start();
+        }
+        countDownLatch.await();
+        System.out.println("-------------------------------end ");
+        return RequestArrayQueueUtils.size();
+    }
 
 }

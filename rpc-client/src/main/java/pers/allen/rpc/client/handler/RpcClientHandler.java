@@ -8,7 +8,9 @@ import org.slf4j.LoggerFactory;
 import pers.allen.rpc.client.channel.RpcChannelGroup;
 import pers.allen.rpc.client.channel.RpcClient;
 import pers.allen.rpc.server.dto.ResponseMsg;
-import pers.allen.rpc.server.utils.RequestSyncQueueUtils;
+import pers.allen.rpc.server.utils.RequestTypeContants;
+import pers.allen.rpc.server.utils.async.RequestArrayQueueUtils;
+import pers.allen.rpc.server.utils.sync.RequestSyncQueueUtils;
 
 
 public class RpcClientHandler extends SimpleChannelInboundHandler<Object> {
@@ -24,7 +26,12 @@ public class RpcClientHandler extends SimpleChannelInboundHandler<Object> {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
           ResponseMsg responseMsg = JSON.parseObject(msg.toString(),ResponseMsg.class);
-          RequestSyncQueueUtils.notifyRequest(responseMsg);
+        // System.out.println(responseMsg.toString());
+          if(RequestTypeContants.SYNC == responseMsg.getType()) {
+              RequestSyncQueueUtils.notifyRequest(responseMsg);
+          } else if(RequestTypeContants.ASYNC == responseMsg.getType()) {
+              RequestArrayQueueUtils.notifyAsyncRequest(responseMsg);
+          }
     }
 
     @Override

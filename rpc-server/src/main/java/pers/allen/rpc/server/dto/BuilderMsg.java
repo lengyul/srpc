@@ -20,8 +20,8 @@ public class BuilderMsg {
         return new RequestMsg(RandomUtils.getRequestId(5),className,methodName,paramTypes,params);
     }
 
-    public static ResponseMsg buildResponseMsg(long requestId, Object data) {
-        return new ResponseMsg(0,"",requestId,RandomUtils.getRequestId(5),data);
+    public static ResponseMsg buildResponseMsg(int type, long requestId, Object data) {
+        return new ResponseMsg(0,"",type,requestId,RandomUtils.getRequestId(5),data);
     }
 
 

@@ -5,7 +5,7 @@ package pers.allen.rpc.server.dto;
  */
 public class RequestMsg {
 
-    private int type; // 请求类型
+    private int type; // 请求类型 0 sync、1 async
     private long requestId; // 请求唯一标识
     private String url; // 请求地址
     private long timeout; // 超时时间
@@ -14,10 +14,16 @@ public class RequestMsg {
     private Class<?>[] paramTypes; // 参数类型
     private Object[] params; // 参数列表
 
-    public RequestMsg() {}
+    // 初始化数据（注解）
+    public RequestMsg(int type, String url, long timeout) {
+        this.type = type;
+        this.url = url;
+        this.timeout = timeout;
+    }
 
+    // 请求数据封装
     public RequestMsg(long requestId, String className, String methodName, Class<?>[] paramTypes, Object[] params) {
-        this.type = 1;
+        this.type = 0;
         this.requestId = requestId;
         this.className = className;
         this.methodName = methodName;

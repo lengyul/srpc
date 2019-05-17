@@ -1,7 +1,9 @@
-package pers.allen.rpc.server.utils;
+package pers.allen.rpc.server.utils.sync;
 
+import pers.allen.rpc.server.dto.BuilderMsg;
 import pers.allen.rpc.server.dto.ResponseMsg;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.SynchronousQueue;
@@ -12,40 +14,36 @@ import java.util.concurrent.TimeUnit;
  */
 public class RequestSyncQueueUtils {
 
-    private static Map<String, SynchronousQueue<ResponseMsg>> queueMap = new ConcurrentHashMap<>();
+    private static Map<Long, SynchronousQueue<ResponseMsg>> queueMap = new ConcurrentHashMap<>();
 
     private RequestSyncQueueUtils() {
         throw new AssertionError();
     }
 
-    public static SynchronousQueue getQueue(String requestId) {
+    private static SynchronousQueue getQueue(Long requestId) {
         if(queueMap.containsKey(requestId)) {
             return queueMap.get(requestId);
         }
-        throw new NullPointerException(requestId);
-       // return null;
+        return null;
     }
 
-    public static ResponseMsg waitResponse(String requestId) {
-        return waitResponse(requestId,5000); // default 5000ms
+    public static ResponseMsg waitResponse(Long requestId) {
+        return waitResponse(requestId,10000L); // default 5000ms
     }
 
     /**
      * 接收响应结果
      * @param requestId
-     * @param timeout
+     * @param timeout 如果没有唤醒或者提前唤醒，保证线程不会一直阻塞
      * @return
      */
-    public static ResponseMsg waitResponse(String requestId, long timeout) {
+    public static ResponseMsg waitResponse(Long requestId, Long timeout) {
         ResponseMsg msg = null;
-        SynchronousQueue<ResponseMsg> synchronousQueue = new SynchronousQueue();
+        SynchronousQueue<ResponseMsg> synchronousQueue = new SynchronousQueue<>();
         queueMap.put(requestId,synchronousQueue);
         try {
-         //   msg = synchronousQueue.take();
               msg = synchronousQueue.poll(timeout, TimeUnit.MILLISECONDS);
-              if(queueMap.containsKey(requestId)){
-                  queueMap.remove(requestId);
-              }
+              queueMap.remove(requestId);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -57,11 +55,9 @@ public class RequestSyncQueueUtils {
      * @param msg
      */
     public static void notifyRequest(ResponseMsg msg) {
-        String requestId = String.valueOf(msg.getRequestId());
-        SynchronousQueue synchronousQueue = getQueue(requestId);
+        SynchronousQueue synchronousQueue = RequestSyncQueueUtils.getQueue(msg.getRequestId());
         if (synchronousQueue != null){
             synchronousQueue.add(msg);
-            queueMap.remove(requestId);
         }
     }
 

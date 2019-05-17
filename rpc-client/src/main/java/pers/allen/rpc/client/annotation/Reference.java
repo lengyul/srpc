@@ -13,5 +13,7 @@ public @interface Reference {
 
     String url() default "";
 
+    int type() default 0;
+
     long timeout() default 0;
 }

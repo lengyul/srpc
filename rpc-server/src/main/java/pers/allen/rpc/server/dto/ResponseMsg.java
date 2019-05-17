@@ -4,15 +4,17 @@ public class ResponseMsg {
 
     private int code; // 响应码
     private String msg; // 响应消息
+    private int type; // 请求类型
     private long requestId; // 请求标识
     private long responseId; // 响应标识
     private Object data; // 返回数据
 
     public ResponseMsg(){}
 
-    public ResponseMsg(int code, String msg, long requestId, long responseId, Object data) {
+    public ResponseMsg(int code, String msg,int type,long requestId, long responseId, Object data) {
         this.code = code;
         this.msg = msg;
+        this.type = type;
         this.requestId = requestId;
         this.responseId = responseId;
         this.data = data;
@@ -34,6 +36,22 @@ public class ResponseMsg {
         this.msg = msg;
     }
 
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
+    }
+
+    public long getRequestId() {
+        return requestId;
+    }
+
+    public void setRequestId(long requestId) {
+        this.requestId = requestId;
+    }
+
     public long getResponseId() {
         return responseId;
     }
@@ -50,21 +68,14 @@ public class ResponseMsg {
         this.data = data;
     }
 
-    public long getRequestId() {
-        return requestId;
-    }
-
-    public void setRequestId(long requestId) {
-        this.requestId = requestId;
-    }
-
     @Override
     public String toString() {
         return "ResponseMsg{" +
                 "code=" + code +
                 ", msg='" + msg + '\'' +
-                ", requestId='" + requestId + '\'' +
-                ", responseId='" + responseId + '\'' +
+                ", type=" + type +
+                ", requestId=" + requestId +
+                ", responseId=" + responseId +
                 ", data=" + data +
                 '}';
     }

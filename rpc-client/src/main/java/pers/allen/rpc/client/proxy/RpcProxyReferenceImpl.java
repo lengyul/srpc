@@ -9,6 +9,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RestController;
 import pers.allen.rpc.client.annotation.Reference;
+import pers.allen.rpc.server.dto.RequestMsg;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -18,6 +19,7 @@ import java.util.Map;
 public final class RpcProxyReferenceImpl implements ApplicationContextAware, InitializingBean {
 
     private final Map<Class,Object> proxyImplMap = new HashMap<>(); // 保存消费者接口代理类
+ //   private final
     private final Logger logger = LoggerFactory.getLogger(RpcProxyReferenceImpl.class);
 
     @Override
@@ -43,8 +45,13 @@ public final class RpcProxyReferenceImpl implements ApplicationContextAware, Ini
                 if(ref != null) {
                     fields[i].setAccessible(true);
                     try {
+                        RequestMsg msg = new RequestMsg(ref.type(),ref.url(),ref.timeout());
+                        // 1.
                         Class clazz = fields[i].getType();
                         fields[i].set(val,createProxyClass(clazz));
+
+                        //2.
+                        /*fields[i].set(val,createProxyInstance(clazz,msg));*/
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -68,5 +75,39 @@ public final class RpcProxyReferenceImpl implements ApplicationContextAware, Ini
         }
         return clazzImpl;
     }
+
+    /*
+    问题：在设值时失败，接口的类型不能转换为ProxyInstance类型，只能为 Object类型
+    private Object createProxyInstance(Class clazz, RequestMsg msg) {
+        Object proxyInstance = null;
+        if(proxyImplMap.containsKey(clazz)) {
+            msg = null;
+            proxyInstance = proxyImplMap.get(clazz);
+        } else {
+            Object clazzImpl =  RpcProxyFactoryInvoke.proxyInstance(clazz); // 代理对象
+            proxyInstance = new ProxyInstance(clazzImpl, msg); //  代理对象+注解属性
+            proxyImplMap.put(clazz,proxyInstance);
+        }
+        System.out.println(proxyInstance);
+        return proxyInstance;
+    }
+
+    private static class ProxyInstance {
+
+        private Object proxy; // 代理对象
+        private RequestMsg requestMsg; // 绑定注解的值
+
+        public ProxyInstance(Object proxy, RequestMsg requestMsg) {
+            this.proxy = proxy;
+            this.requestMsg = requestMsg;
+        }
+
+        public Object getProxy() {
+            return proxy;
+        }
+        public RequestMsg getRequestMsg() {
+            return requestMsg;
+        }
+    }*/
 
 }

@@ -15,6 +15,8 @@ import pers.allen.rpc.server.codec.fastjson.JSONEncoder;
 import pers.allen.rpc.server.dto.RequestMsg;
 
 import java.net.SocketAddress;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class RpcClient extends RpcChannelGroup {
 
@@ -30,37 +32,43 @@ public final class RpcClient extends RpcChannelGroup {
     public static RpcClient getInstance() {
         return rpcClient;
     }
+    private final Object mutex = new Object();
 
     /**
      * 获取Channel，如果不存在则创建，使用 synchronized 防止同一时刻请求创建多个
      * @param serviceName
      * @return
      */
-    protected synchronized Channel getChannel(String serviceName) {
-         SocketAddress socketAddress = serviceDiscovery.getServiceAddress(serviceName);// 获取服务请求地址
-         if(channelMap.containsKey(socketAddress)) {
-            return channelMap.get(socketAddress);
-        }
+    protected Channel getChannel(String serviceName) {
+        SocketAddress socketAddress = serviceDiscovery.getServiceAddress(serviceName);// 获取服务请求地址
+            if(channelMap.containsKey(socketAddress)) {
+                return channelMap.get(socketAddress);
+            }
         try {
-            bootstrap = new Bootstrap();
-            group = new NioEventLoopGroup(4);
-            future = bootstrap.group(group)
-                    .channel(NioSocketChannel.class)
-                    .remoteAddress(socketAddress)
-                    .option(ChannelOption.SO_KEEPALIVE,true)
-                    .handler(new ChannelInitializer<SocketChannel>() {
-                        @Override
-                        protected void initChannel(SocketChannel ch) throws Exception {
-                            ChannelPipeline pipeline = ch.pipeline();
-                            pipeline.addLast(new JSONEncoder());
-                            pipeline.addLast(new JSONDecoder(1024,0,4));
-                            pipeline.addLast(new RpcClientHandler());
-                        }
-                    })
-                    .connect().sync();
-                    channel = future.channel();
-                    channelMap.put(socketAddress,channel);
-                    future = null;
+            synchronized (mutex) {
+                if(channelMap.containsKey(socketAddress)) {
+                    return channelMap.get(socketAddress);
+                }
+                bootstrap = new Bootstrap();
+                group = new NioEventLoopGroup(4);
+                future = bootstrap.group(group)
+                        .channel(NioSocketChannel.class)
+                        .remoteAddress(socketAddress)
+                        .option(ChannelOption.SO_KEEPALIVE, true)
+                        .handler(new ChannelInitializer<SocketChannel>() {
+                            @Override
+                            protected void initChannel(SocketChannel ch) throws Exception {
+                                ChannelPipeline pipeline = ch.pipeline();
+                                pipeline.addLast(new JSONEncoder());
+                                pipeline.addLast(new JSONDecoder(1024, 0, 4));
+                                pipeline.addLast(new RpcClientHandler());
+                            }
+                        })
+                        .connect().sync();
+                channel = future.channel();
+                channelMap.put(socketAddress, channel);
+                future = null;
+            }
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
