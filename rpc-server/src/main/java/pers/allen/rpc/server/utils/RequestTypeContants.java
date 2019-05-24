@@ -13,4 +13,6 @@ public class RequestTypeContants {
 
     public static final int CALL = 2;
 
+    public static final long TIMEOUT = 10000;
+
 }

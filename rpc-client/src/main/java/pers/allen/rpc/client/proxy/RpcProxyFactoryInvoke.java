@@ -14,6 +14,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
+import java.sql.Ref;
 
 public class RpcProxyFactoryInvoke implements InvocationHandler {
 
@@ -26,19 +27,20 @@ public class RpcProxyFactoryInvoke implements InvocationHandler {
         if("toString".equals(method.getName())) {
             return proxy.getClass().getName();
         }
-        System.out.println(proxy);
+     //   System.out.println(proxy);
         RequestMsg requestMsg  = BuilderMsg.buildRequestMsg(method,args);
+        requestMsg.setType(1);
         int type = requestMsg.getType();
+
         Long requestId = requestMsg.getRequestId();
         channelGroup.remoteRequest(requestMsg); // 请求远程调用
         if (RequestTypeContants.SYNC == type) { // sync
             // 阻塞等待远程调用完成并返回
             ResponseMsg responseMsg = RequestSyncQueueUtils.waitResponse(requestId);
-            System.out.println(responseMsg);
             if(responseMsg != null)
                 return responseMsg.getData();
         } else if(RequestTypeContants.ASYNC == type) { // async
-            RequestAsyncFutureUtils.asyncRequest(Thread.currentThread().getId(), requestId);
+            RequestAsyncFutureUtils.asyncRequest(requestId);
         }
         return null;
     }

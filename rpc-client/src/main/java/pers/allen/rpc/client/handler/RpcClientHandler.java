@@ -26,7 +26,6 @@ public class RpcClientHandler extends SimpleChannelInboundHandler<Object> {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
           ResponseMsg responseMsg = JSON.parseObject(msg.toString(),ResponseMsg.class);
-        // System.out.println(responseMsg.toString());
           if(RequestTypeContants.SYNC == responseMsg.getType()) {
               RequestSyncQueueUtils.notifyRequest(responseMsg);
           } else if(RequestTypeContants.ASYNC == responseMsg.getType()) {

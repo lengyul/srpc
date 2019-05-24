@@ -4,30 +4,38 @@ import pers.allen.rpc.server.dto.ResponseMsg;
 import pers.allen.rpc.server.utils.sync.RequestSyncQueueUtils;
 
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * Created by lengyul on 2019/5/15 17:14
  */
 public class RequestAsyncFutureUtils {
 
-    private static Map<Long, Future<?>> futureMap = new ConcurrentHashMap<>();
+    private static final ThreadLocal<Future> localFuture = new ThreadLocal<>();
 
-    private static ExecutorService asyncService = Executors.newCachedThreadPool();
+    private static final ExecutorService asyncService = Executors.newCachedThreadPool();
 
-    public static void asyncRequest(Long rtId, Long requestId) {
-            AsyncRequestThread art = new AsyncRequestThread<>(requestId);
-            Future future = asyncService.submit(art);
-            futureMap.put(rtId,future);
+    private static AsyncRequestThread newAsyncRequestThread(Long requestId) {
+        AsyncRequestThread art = new AsyncRequestThread<>(requestId);
+        return art;
+    }
+
+    public static void asyncRequest(Long requestId) {
+        Future future = asyncService.submit(newAsyncRequestThread(requestId));
+        localFuture.set(future);
+    }
+
+    public static void callRequest(Long rtId, Long requestId) {
+   //         CompletableFuture.runAsync();
     }
 
     public static Future getContextFuture() {
         Future<?> future = null;
-        Long tid = Thread.currentThread().getId();
-        if (futureMap.containsKey(tid)) {
-            future = futureMap.get(tid);
-            futureMap.remove(tid);
-        }
+        future = localFuture.get();
+       localFuture.remove();
         return future;
     }
 

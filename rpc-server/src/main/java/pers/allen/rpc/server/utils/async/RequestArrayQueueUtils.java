@@ -2,6 +2,7 @@ package pers.allen.rpc.server.utils.async;
 
 import pers.allen.rpc.server.dto.BuilderMsg;
 import pers.allen.rpc.server.dto.ResponseMsg;
+import pers.allen.rpc.server.utils.RequestTypeContants;
 
 import java.sql.Time;
 import java.time.LocalDate;
@@ -21,7 +22,7 @@ public class RequestArrayQueueUtils {
     }
 
     public static ResponseMsg waitAsyncResponse(Long requestId) throws InterruptedException {
-        return waitAsyncResponse(requestId, 10000L);
+        return waitAsyncResponse(requestId, RequestTypeContants.TIMEOUT);
     }
 
     private static BlockingQueue getBlockingQueue(Long requestId) {

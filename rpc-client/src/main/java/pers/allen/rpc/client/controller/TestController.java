@@ -12,6 +12,7 @@ import pers.allen.rpc.server.utils.async.RequestArrayQueueUtils;
 import pers.allen.rpc.server.utils.async.RequestAsyncFutureUtils;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -53,7 +54,7 @@ public class TestController {
         CountDownLatch countDownLatch  = new CountDownLatch(threadNumber);
         for (int i = 0; i < threadNumber; i++) {
             new Thread(() -> {
-                testService.getList();
+                System.out.println(testService.getList());
                 countDownLatch.countDown();
             }).start();
         }
@@ -69,6 +70,7 @@ public class TestController {
      System.out.println(list);
      // 获取当前请求线程Future
      Future<List<String>> future = RequestAsyncFutureUtils.getContextFuture();
+     //   CompletableFuture<String> ff = RequestAsyncFutureUtils.getContextFuture();
      List<String> list2 =   future.get();
      System.out.println(list2);
      return null;

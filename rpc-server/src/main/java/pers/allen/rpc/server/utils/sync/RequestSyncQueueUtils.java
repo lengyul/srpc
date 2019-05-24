@@ -2,6 +2,7 @@ package pers.allen.rpc.server.utils.sync;
 
 import pers.allen.rpc.server.dto.BuilderMsg;
 import pers.allen.rpc.server.dto.ResponseMsg;
+import pers.allen.rpc.server.utils.RequestTypeContants;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,7 +29,7 @@ public class RequestSyncQueueUtils {
     }
 
     public static ResponseMsg waitResponse(Long requestId) {
-        return waitResponse(requestId,10000L); // default 5000ms
+        return waitResponse(requestId, RequestTypeContants.TIMEOUT); // default 5000ms
     }
 
     /**

@@ -14,6 +14,8 @@ public class RequestMsg {
     private Class<?>[] paramTypes; // 参数类型
     private Object[] params; // 参数列表
 
+
+    public  RequestMsg() {}
     // 初始化数据（注解）
     public RequestMsg(int type, String url, long timeout) {
         this.type = type;
@@ -23,7 +25,7 @@ public class RequestMsg {
 
     // 请求数据封装
     public RequestMsg(long requestId, String className, String methodName, Class<?>[] paramTypes, Object[] params) {
-        this.type = 0;
+     //   this.type = 0;
         this.requestId = requestId;
         this.className = className;
         this.methodName = methodName;
