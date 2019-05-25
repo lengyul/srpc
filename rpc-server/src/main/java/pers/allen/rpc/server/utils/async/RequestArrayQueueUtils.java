@@ -55,13 +55,10 @@ public class RequestArrayQueueUtils {
     public static void notifyAsyncRequest(ResponseMsg msg) throws InterruptedException {
         Long requestId = msg.getRequestId();
         BlockingQueue queue = getBlockingQueue(requestId);
-        if (queue != null) {
-            queue.put(msg);
-        } else {
-            queue =  newArrayQueue();
-            queue.put(msg);
-            blockingQueueMap.put(requestId, queue);
-        }
+        if (queue != null) { queue.put(msg); return; }
+        queue =  newArrayQueue();
+        queue.put(msg);
+        blockingQueueMap.put(requestId, queue);
     }
 
 }

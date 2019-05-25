@@ -69,8 +69,9 @@ public class TestController {
      List<String> list =   testService.getList();
      System.out.println(list);
      // 获取当前请求线程Future
-     Future<List<String>> future = RequestAsyncFutureUtils.getContextFuture();
+        CompletableFuture<List<String>> future = RequestAsyncFutureUtils.getContextFuture();
      //   CompletableFuture<String> ff = RequestAsyncFutureUtils.getContextFuture();
+        System.out.println(future.getNow(null));
      List<String> list2 =   future.get();
      System.out.println(list2);
      return null;
@@ -84,7 +85,8 @@ public class TestController {
         for (int i = 0; i < threadNumber; i++) {
             new Thread(() -> {
                 testService.getList();
-                Future<List<String>> future = RequestAsyncFutureUtils.getContextFuture();
+                CompletableFuture<List<String>> future = RequestAsyncFutureUtils.getContextFuture();
+
                 try {
                     List<String> list2 =   future.get();
                     System.out.println(list2);
